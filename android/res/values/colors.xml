@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 与 manifest.json / styles.css 中的主题色保持一致 -->
+    <color name="brand">#0F5F6B</color>
+    <color name="brand_dark">#0A4750</color>
+    <color name="brand_light">#12727F</color>
+    <color name="page_bg">#EEF2F3</color>
+    <color name="icon_bg_start">#12727F</color>
+    <color name="icon_bg_end">#0A4750</color>
+</resources>

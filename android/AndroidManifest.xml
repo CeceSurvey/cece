@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.chaiyichai.cece"
+    android:versionCode="30001"
+    android:versionName="3.0.1">
+
+    <!--
+      仅用于 WebView 加载 https://appassets.androidplatform.net 这一「虚拟域名」。
+      该域名的请求全部由 MainActivity.shouldInterceptRequest() 从 APK 内的 assets
+      直接返回，不会产生真实网络连接。程序没有任何联网代码，断网可完整使用。
+      声明此权限是为了规避部分 WebView 版本对 https 主文档的权限校验。
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:name="com.chaiyichai.cece.MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|keyboard|navigation|uiMode|density|fontScale"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

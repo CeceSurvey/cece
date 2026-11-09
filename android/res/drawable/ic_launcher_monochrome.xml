@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 13+ 主题图标（单色）：只保留坐标轴与测点剪影 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="192"
+    android:viewportHeight="192">
+
+    <group
+        android:scaleX="0.55"
+        android:scaleY="0.55"
+        android:translateX="43.2"
+        android:translateY="43.2">
+
+        <path
+            android:pathData="M56,40V136H152"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="6.5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <path
+            android:pathData="M56,40 43,68.5h26L56,40Z"
+            android:fillColor="#FFFFFF" />
+        <path
+            android:pathData="M152,136l-28.5,-13v26L152,136Z"
+            android:fillColor="#FFFFFF" />
+        <path
+            android:pathData="M109,84a13,13 0 1,0 26,0a13,13 0 1,0 -26,0z"
+            android:fillColor="#FFFFFF" />
+
+    </group>
+</vector>

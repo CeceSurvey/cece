@@ -1,0 +1,18 @@
+<!--
+  测策 · 工程测量学习与实训系统 应用图标（可遮罩版）
+  版权所有 © 2026 陈昱晨（ChaiYiChai）· CC BY-NC 4.0
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" fill="#0d5560"/>
+  <g stroke="#eaf6f7" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M62 50v86h86"/>
+  </g>
+  <path d="M62 50 50 76h24L62 50Z" fill="#eaf6f7"/>
+  <path d="M148 136l-26-12v24L148 136Z" fill="#eaf6f7"/>
+  <!-- 辅助虚线先画，交点就是圆点圆心 (120,90) -->
+  <g stroke="#8ec4c8" stroke-width="3" stroke-dasharray="5 5.5" stroke-linecap="round" opacity=".9">
+    <path d="M120 90v35"/>
+    <path d="M120 90H78"/>
+  </g>
+  <circle cx="120" cy="90" r="9" fill="#f0a25c"/>
+</svg>

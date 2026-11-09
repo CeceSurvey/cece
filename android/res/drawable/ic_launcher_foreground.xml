@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  自适应图标前景层：108dp 画布，内容缩到 55%，
+  确保落在系统遮罩（圆形 / squircle / 水滴）的 66% 安全区内。
+  图形与 icon.svg（v2.7.0）一致：
+  辅助虚线自圆心 (122,84) 引出，测点带白色衬底、压住虚线交点。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="192"
+    android:viewportHeight="192">
+
+    <group
+        android:scaleX="0.55"
+        android:scaleY="0.55"
+        android:translateX="43.2"
+        android:translateY="43.2">
+
+        <!-- 辅助虚线：VectorDrawable 不支持 dasharray，按原图 5 / 5.5 的节奏拆段还原 -->
+        <path
+            android:pathData="M122,84V89 M122,94.5V99.5 M122,105V110 M122,115.5V120.5"
+            android:strokeColor="#8EC4C8"
+            android:strokeWidth="3"
+            android:strokeAlpha="0.9" />
+        <path
+            android:pathData="M122,84H117 M111.5,84H106.5 M101,84H96 M90.5,84H85.5 M80,84H75"
+            android:strokeColor="#8EC4C8"
+            android:strokeWidth="3"
+            android:strokeAlpha="0.9" />
+
+        <!-- 坐标轴 -->
+        <path
+            android:pathData="M56,40V136H152"
+            android:strokeColor="#EAF6F7"
+            android:strokeWidth="6.5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+
+        <!-- 轴端箭头 -->
+        <path
+            android:pathData="M56,40 43,68.5h26L56,40Z"
+            android:fillColor="#EAF6F7" />
+        <path
+            android:pathData="M152,136l-28.5,-13v26L152,136Z"
+            android:fillColor="#EAF6F7" />
+
+        <!-- 测点：白色衬底压住虚线，再叠橙色圆点 -->
+        <path
+            android:pathData="M109,84a13,13 0 1,0 26,0a13,13 0 1,0 -26,0z"
+            android:fillColor="#EAF6F7" />
+        <path
+            android:pathData="M112,84a10,10 0 1,0 20,0a10,10 0 1,0 -20,0z"
+            android:fillColor="#F0A25C" />
+
+    </group>
+</vector>

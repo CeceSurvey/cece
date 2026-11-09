@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<!--
+  测策 · 工程测量学习与实训系统
+  版权所有 © 2026 陈昱晨（ChaiYiChai）
+  采用 CC BY-NC 4.0 许可证授权，详见项目根目录 LICENSE 文件
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f5f6b" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="测策" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="description" content="测策 —— 工程测量学习与实训系统" />
+<title>测策 · 工程测量</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- ============================ 首页 ============================ -->
+  <section class="screen screen-home is-active" data-screen="home" aria-label="首页">
+    <div class="home-wrap">
+      <div class="home-brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <path d="M16 12v38h38" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 12 11.4 21.4h9.2L16 12Z" fill="currentColor"/>
+            <path d="M54 50l-9.4-4.6v9.2L54 50Z" fill="currentColor"/>
+            <circle cx="40" cy="27" r="4.2" fill="currentColor"/>
+            <path d="M40 31.2v9.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="2.4 2.6" opacity=".55"/>
+            <path d="M40 31.2H23.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="2.4 2.6" opacity=".55"/>
+          </svg>
+        </div>
+        <h1 class="brand-title">测策</h1>
+        <p class="brand-sub">工程测量学习与实训系统</p>
+      </div>
+
+      <nav class="home-actions" aria-label="主导航">
+        <button class="action-card" data-nav="new">
+          <span class="action-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+          </span>
+          <span class="action-title">新建工作</span>
+          <span class="action-desc">创建一份新的测量记录</span>
+        </button>
+
+        <button class="action-card" data-nav="works">
+          <span class="action-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 7h16M4 12h16M4 17h10"/>
+            </svg>
+          </span>
+          <span class="action-title">工作管理</span>
+          <span class="action-desc">管理所有测量记录</span>
+        </button>
+
+        <button class="action-card" data-nav="export">
+          <span class="action-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 20V9M9.3 20V4M14.7 20v-8M20 20v-5"/>
+            </svg>
+          </span>
+          <span class="action-title">数据分析</span>
+          <span class="action-desc">图表、图片与表格处理</span>
+        </button>
+
+        <button class="action-card" data-nav="about">
+          <span class="action-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="8.6"/>
+              <path d="M12 11v5.4M12 7.8v.2"/>
+            </svg>
+          </span>
+          <span class="action-title">关于程序</span>
+          <span class="action-desc">使用说明与版本信息</span>
+        </button>
+      </nav>
+
+      <p class="home-foot">数据保存在本机存储 · v3.0.1</p>
+    </div>
+  </section>
+
+
+  <!-- ============================ 新建工作 ============================ -->
+  <section class="screen screen-page" data-screen="new" aria-label="新建工作">
+    <header class="topbar">
+      <button class="icon-btn" data-nav="home" aria-label="返回首页">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h2 class="topbar-title">新建工作</h2>
+      <span class="topbar-spacer"></span>
+    </header>
+
+    <div class="page-body">
+      <div class="card form-card">
+        <p class="field-label">工作类型</p>
+        <div class="kind-picker" id="kindPicker" role="radiogroup" aria-label="工作类型">
+          <button type="button" class="kind-card" data-kind="total" role="radio" aria-checked="true">
+            <span class="kind-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="7" cy="16" r="2.2"/><circle cx="17" cy="8" r="2.2"/><path d="M8.8 14.4 15.2 9.6"/>
+              </svg>
+            </span>
+            <span class="kind-name">全站仪测绘</span>
+            <span class="kind-desc">点位坐标录入与平面成图</span>
+          </button>
+          <button type="button" class="kind-card" data-kind="level" role="radio" aria-checked="false">
+            <span class="kind-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 9h16M6.5 9V6.4M17.5 9V6.4"/><path d="M5 15h5M14 15h5M7.5 15v4M16.5 15v4"/>
+              </svg>
+            </span>
+            <span class="kind-name">水准测量</span>
+            <span class="kind-desc">高差与高程计算、成果整理</span>
+          </button>
+          <button type="button" class="kind-card" data-kind="angle" role="radio" aria-checked="false">
+            <span class="kind-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19h16"/><path d="M4 19 18 7"/><path d="M9.2 19a5.2 5.2 0 0 0 1.6-3.6"/>
+              </svg>
+            </span>
+            <span class="kind-name">角度测量</span>
+            <span class="kind-desc">测回法观测与角值计算</span>
+          </button>
+        </div>
+
+        <label class="field form-gap">
+          <span class="field-label">工作名称</span>
+          <input id="newName" class="text-input" type="text" maxlength="40" autocomplete="off" spellcheck="false" placeholder="例如：实习一组 · 控制点测量" />
+        </label>
+
+        <!-- 水准测量专属参数 -->
+        <div class="kind-fields" id="kindFields" hidden>
+          <div class="field-row">
+            <label class="field">
+              <span class="field-label">起点已知高程 H始 (m)</span>
+              <input id="newStartH" class="text-input" type="text" inputmode="decimal" autocomplete="off" placeholder="如 50.000" />
+            </label>
+            <label class="field">
+              <span class="field-label">容许闭合差系数</span>
+              <input id="newTol" class="text-input" type="text" inputmode="decimal" autocomplete="off" placeholder="如 40" value="40" />
+            </label>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-ghost" data-nav="home">取消</button>
+          <button class="btn btn-primary" id="createBtn">创建并开始</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================ 工作管理 ============================ -->
+  <section class="screen screen-page" data-screen="works" aria-label="工作管理">
+    <header class="topbar">
+      <button class="icon-btn" data-nav="home" aria-label="返回首页">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h2 class="topbar-title">工作管理</h2>
+      <span class="topbar-grow"></span>
+      <button class="icon-btn" id="importBtn" aria-label="导入工作文件" title="从文件导入工作">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 4v10M8 10l4 4 4-4"/><path d="M5 17v2.5h14V17"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="batchBtn" aria-label="批量管理" title="批量管理">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 6.5h11M4 12h11M4 17.5h7"/><circle cx="18.5" cy="17.5" r="2.1"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="page-body">
+      <div class="works-toolbar">
+        <div class="search-box">
+          <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.4"/><path d="M16 16l4 4"/>
+          </svg>
+          <input id="searchInput" type="search" class="search-input" placeholder="搜索工作名称" autocomplete="off" />
+          <button class="search-clear" id="searchClear" aria-label="清除搜索" hidden>×</button>
+        </div>
+
+        <div class="sort-wrap">
+          <select id="sortSelect" class="sort-select" aria-label="排序方式">
+            <option value="updated">最近修改</option>
+            <option value="created">最早创建</option>
+            <option value="name">名称 A→Z</option>
+            <option value="kind">按类型</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-bar" id="filterBar"></div>
+
+      <div class="archive-head">
+        <span id="archiveCount" class="archive-count">共 0 个工作</span>
+        <button class="link-btn" id="selectAllBtn" hidden>全选</button>
+      </div>
+
+      <div id="archiveList" class="archive-list"></div>
+      <input type="file" id="importFile" accept=".json,application/json" hidden />
+
+      <div class="batch-bar" id="batchBar" hidden>
+        <span class="batch-info" id="batchInfo">已选 0 项</span>
+        <div class="batch-ops">
+          <button class="op-btn" id="batchExport">导出</button>
+          <button class="op-btn is-danger" id="batchDelete">删除</button>
+          <button class="op-btn" id="batchExit">完成</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================ 数据分析 ============================ -->
+  <section class="screen screen-page" data-screen="export" aria-label="数据分析">
+    <header class="topbar">
+      <button class="icon-btn" data-nav="home" aria-label="返回首页">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h2 class="topbar-title">数据分析</h2>
+      <span class="topbar-spacer"></span>
+    </header>
+
+    <div class="page-body">
+      <div class="card exp-pick">
+        <div class="exp-pick-head">
+          <span class="field-label">选择工作后查看分析</span>
+          <span class="exp-pick-hint" id="expPickHint"></span>
+        </div>
+        <div class="filter-bar exp-kinds" id="expKindBar" role="tablist" aria-label="按工作类型筛选"></div>
+        <p class="field-hint">点开一份工作，进入它自己的数据分析页；图表、导出与智能纸图都在那一页里。</p>
+      </div>
+
+      <div id="expList" class="exp-list"></div>
+    </div>
+  </section>
+
+
+  <!-- ============================ 数据分析 · 单份工作 ============================ -->
+  <section class="screen screen-page" data-screen="analysis" aria-label="数据分析详情">
+    <header class="topbar">
+      <button class="icon-btn" id="expBack" aria-label="返回数据分析列表">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h2 class="topbar-title" id="expTitle">数据分析</h2>
+      <span class="topbar-spacer"></span>
+    </header>
+
+    <div class="page-body">
+      <div id="expReport"></div>
+    </div>
+  </section>
+
+
+  <!-- ============================ 程序设置 ============================ -->
+  <section class="screen screen-page" data-screen="settings" aria-label="程序设置">
+    <header class="topbar">
+      <button class="icon-btn" data-nav="home" aria-label="返回首页">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h2 class="topbar-title">程序设置</h2>
+      <span class="topbar-spacer"></span>
+    </header>
+
+    <div class="page-body">
+      <div class="card">
+        <div class="section-head">
+          <div>
+            <h3 class="section-title">全站仪测绘 · 点的分类</h3>
+            <p class="section-sub">按备注关键词自动识别点位类型，并决定图中点号的显示颜色；默认点决定新建点位用哪个类型</p>
+          </div>
+          <button class="btn btn-primary btn-sm" id="addTypeBtn">新建类型</button>
+        </div>
+        <div id="typeList" class="type-list"></div>
+        <p class="tip-line">提示：点「修改」可在弹窗里切换「选择该点为默认点」（默认点只保留一个，设了新的旧的自然取消）；启用图上的「编辑点」后点选某个点，可以单独修改它的类型；备注中同时出现两类关键词时，程序不会强行分类。</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================ 关于程序 ============================ -->
+  <section class="screen screen-page" data-screen="about" aria-label="关于程序">
+    <header class="topbar">
+      <button class="icon-btn" data-nav="home" aria-label="返回首页">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <h2 class="topbar-title">关于程序</h2>
+      <span class="topbar-spacer"></span>
+    </header>
+
+    <div class="page-body about-body">
+      <div class="card about-hero">
+        <div class="about-logo" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <path d="M16 12v38h38" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 12 11.4 21.4h9.2L16 12Z" fill="currentColor"/>
+            <path d="M54 50l-9.4-4.6v9.2L54 50Z" fill="currentColor"/>
+            <circle cx="40" cy="27" r="4.2" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="about-hero-text">
+          <h3 class="about-name">测策</h3>
+          <p class="about-ver">当前版本 3.0.1</p>
+          <p class="about-ver">开发者 ChaiYiChai</p>
+        </div>
+      </div>
+
+      <button class="card about-entry" data-nav="settings">
+        <span class="about-entry-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3.2"/>
+            <path d="M12 3.2v2.4M12 18.4v2.4M4.8 12H2.4M21.6 12h-2.4M6.9 6.9 5.2 5.2M18.8 18.8l-1.7-1.7M17.1 6.9l1.7-1.7M5.2 18.8l1.7-1.7"/>
+          </svg>
+        </span>
+        <span class="about-entry-main">
+          <span class="about-entry-title">「测策」程序设置</span>
+          <span class="about-entry-sub">点位分类、颜色与备注关键词</span>
+        </span>
+        <span class="row-link-caret" aria-hidden="true">›</span>
+      </button>
+
+      <button class="card about-entry" id="openGuide">
+        <span class="about-entry-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 5.2h7.2a1.6 1.6 0 0 1 1.6 1.6V19a1.4 1.4 0 0 0-1.4-1.4H4Z"/>
+            <path d="M20 5.2h-7.2A1.6 1.6 0 0 0 11.2 6.8V19a1.4 1.4 0 0 1 1.4-1.4H20Z"/>
+          </svg>
+        </span>
+        <span class="about-entry-main">
+          <span class="about-entry-title">如何使用「测策」</span>
+          <span class="about-entry-sub">三种测量功能的操作要点</span>
+        </span>
+        <span class="row-link-caret" aria-hidden="true">›</span>
+      </button>
+
+      <div class="card about-block">
+        <h3>为什么会有「测策」</h3>
+        <p>「测策」是一款面向土木工程测量课程学习与实训的辅助工具。</p>
+        <p>我刚上测量课的时候，最怕的不是操作仪器，而是计算仪器上的数据、把仪器上的数据变成图。</p>
+        <p>全站仪读出来的水平角、距离，回到桌前要算坐标，不妨想想：N 和 E 哪个是 X、哪个是 Y？点一个个填进表里，画到图上又挤成一团，根本看不出方向对不对？那时候我最想要一个东西：一边填数，一边就能看到点落在图上的哪里；算错了、点号重复了、方向反了，能马上发现。</p>
+        <p>于是就有了「测策」。它首先是我给自己做的练习工具，也希望能帮到同样在初学阶段犯迷糊的同学——把全站仪测量里的数据录入、坐标计算和平面成图放在同一个页面里，让"填数—算坐标—看图"即时对应，慢慢把手感、方向感和对数据的判断力练出来。</p>
+        <p>它不是要替代课堂和实训，而是课堂之外的一个练习和验证工具。我不敢说它多完善，但至少，它是我当初最想要的那个东西。</p>
+      </div>
+
+      <div class="card about-block">
+        <h3>数据与存档提醒</h3>
+        <p>本程序的所有数据均存储在使用者本机本地，可以导出和导入，不上传云端，也不依赖网络。</p>
+        <p class="about-strong">请务必注意：</p>
+        <ul class="about-list">
+          <li>卸载软件或更换设备前，请先导出你的"工作存档"。</li>
+          <li>本地数据可能随软件卸载、设备重置或系统清理而丢失，程序无法代为恢复。</li>
+          <li>建议养成定期导出、备份工作存档的习惯。</li>
+        </ul>
+      </div>
+
+      <div class="card about-block">
+        <h3>许可与授权</h3>
+        <ul class="about-list">
+          <li>本程序允许个人学习、教学实训等非商业用途下的逆向分析与二次开发。</li>
+          <li>进行二次开发时，请保留原开发者署名，并注明基于「测策」修改。</li>
+          <li>未经开发者授权，禁止将本程序或其衍生版本用于任何商业行为（包括但不限于售卖、付费分发、商业培训、商业项目交付等）。</li>
+          <li>商业使用授权请联系开发者。</li>
+        </ul>
+      </div>
+
+      <div class="card about-block">
+        <h3>反馈与建议</h3>
+        <p>使用中遇到问题、发现错误，或有功能建议，欢迎通过以下方式反馈：</p>
+        <ul class="about-list">
+          <li>邮箱：<a class="about-mail" href="mailto:cece_survey@outlook.com">cece_survey@outlook.com</a></li>
+          <li>联系推荐你使用本程序的课程负责老师</li>
+        </ul>
+      </div>
+
+      <div class="card about-block">
+        <h3>致谢</h3>
+        <ul class="about-list">
+          <li>感谢使用本程序的学生、老师，为本程序的开发提供了支持和反馈。</li>
+          <li>感谢开源社区与相关工具生态，为本程序的开发提供了基础与便利。</li>
+        </ul>
+      </div>
+
+      <div class="card about-block about-last">
+        <h3>写在最后</h3>
+        <p>测量是一门"手上要有感觉、图上要有方向"的课。希望「测策」能帮你在初学时少一点茫然，多一点"原来如此"的瞬间。</p>
+        <p>祝愿各位同学都能取得好成绩。</p>
+        <p class="about-sign">—— ChaiYiChai</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================ 工作区 ============================ -->
+  <section class="screen screen-workspace" data-screen="project" aria-label="工作区">
+    <header class="topbar topbar-ws">
+      <button class="icon-btn" id="wsBack" aria-label="返回工作管理">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <div class="ws-heading">
+        <h2 class="ws-title" id="wsName">工作</h2>
+        <span class="ws-status" id="wsStatus">已保存</span>
+      </div>
+      <button class="save-btn" id="wsSave" aria-label="保存工作" title="保存工作（Ctrl / ⌘ + S）">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19.5 21h-15A1.5 1.5 0 0 1 3 19.5v-15A1.5 1.5 0 0 1 4.5 3h11.4L21 7.1v12.4A1.5 1.5 0 0 1 19.5 21Z"/>
+          <path d="M16.5 21v-7.5h-9V21"/><path d="M7.5 3v4.5h6.6"/>
+        </svg>
+        <span class="save-btn-label">保存</span>
+      </button>
+      <button class="icon-btn" id="wsExport" aria-label="导出工作" title="导出为文件">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 15V5M8 9l4-4 4 4"/><path d="M5 17v2.5h14V17"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="ws-host" id="wsBody"></div>
+  </section>
+
+</div>
+
+<!-- ============================ 通用对话框 ============================ -->
+<div class="modal" id="modal" hidden>
+  <div class="modal-mask" data-close></div>
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <h3 class="modal-title" id="modalTitle">标题</h3>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions" id="modalActions">
+      <button class="btn btn-ghost" data-close>取消</button>
+      <button class="btn btn-primary" id="modalOk">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ 轻提示 ============================ -->
+<div class="toast" id="toast" hidden></div>
+
+<script src="core.js"></script>
+<script src="app.js"></script>
+<script>
+  // 注册 Service Worker（PWA 离线缓存）。仅在 http/https 协议下注册，
+  // file:// 或非安全上下文会静默跳过。
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () { /* 忽略注册失败 */ });
+    });
+  }
+</script>
+</body>
+</html>

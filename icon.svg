@@ -1,0 +1,25 @@
+<!--
+  测策 · 工程测量学习与实训系统 应用图标
+  版权所有 © 2026 陈昱晨（ChaiYiChai）· CC BY-NC 4.0
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#12727f"/>
+      <stop offset="100%" stop-color="#0a4750"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="42" fill="url(#bg)"/>
+  <g stroke="#eaf6f7" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M56 40v96h96"/>
+  </g>
+  <path d="M56 40 43 68.5h26L56 40Z" fill="#eaf6f7"/>
+  <path d="M152 136l-28.5-13v26L152 136Z" fill="#eaf6f7"/>
+  <!-- 辅助虚线先画，交点就是圆点圆心 (122,84)，圆点压在上层 -->
+  <g stroke="#8ec4c8" stroke-width="3" stroke-dasharray="5 5.5" stroke-linecap="round" opacity=".9">
+    <path d="M122 84v40"/>
+    <path d="M122 84H74"/>
+  </g>
+  <circle cx="122" cy="84" r="13" fill="#eaf6f7"/>
+  <circle cx="122" cy="84" r="10" fill="#f0a25c"/>
+</svg>
