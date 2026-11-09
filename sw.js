@@ -7,7 +7,7 @@
  * 之后无网络也能打开应用（数据仍存 localStorage，本机持久化）。
  * ============================================================ */
 
-const CACHE_NAME = 'cece-v3.0.1';
+const CACHE_NAME = 'cece-v3.0.2';
 const CORE_ASSETS = [
   './',
   './index.html',
