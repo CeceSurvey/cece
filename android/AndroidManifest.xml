@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.chaiyichai.cece"
-    android:versionCode="30002"
-    android:versionName="3.0.2">
+    android:versionCode="30003"
+    android:versionName="3.0.3">
 
     <!--
       仅用于 WebView 加载 https://appassets.androidplatform.net 这一「虚拟域名」。

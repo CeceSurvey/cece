@@ -19,7 +19,6 @@ build/
 out/
 *.apk
 *.aab
-*.hap
 *.app
 *.ipa
 
@@ -31,14 +30,6 @@ website/
 
 # --- 助手工作记忆（工具内部文件，绝不进公开仓库）---
 .workbuddy/
-
-# --- 鸿蒙构建缓存与产物 ---
-.hvigor/
-
-# --- 鸿蒙版本（不公开发布）---
-harmony/
-harmony-native/
-docs/鸿蒙打包指南.md
 
 # --- 软著申请材料（不公开）---
 软著材料/

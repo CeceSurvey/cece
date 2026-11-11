@@ -2,7 +2,7 @@
 
 /* ============================================================
  * 测策 · 工程测量学习与实训系统
- * 逻辑层 v3.0.2
+ * 逻辑层 v3.0.3
  * 版权所有 © 2026 陈昱晨（ChaiYiChai）
  * 采用 CC BY-NC 4.0 许可证授权，详见项目根目录 LICENSE 文件
  *
@@ -20,13 +20,14 @@
  *  10  全站仪测绘：平面图
  *  11  全站仪测绘：交互（连线 / 改色 / 改类型）
  *  12  水准测量
- *  13  角度测量
+ *  13  角度测量（测回法）
  *  14  程序设置页
- *  15  关于页
- *  16  事件绑定与启动
+ *  15  数据分析（图表 / 图片 / CSV / 智能纸图）
+ *  16  关于页
+ *  17  事件绑定与启动
  * ============================================================ */
 
-const APP_VERSION = '3.0.2';
+const APP_VERSION = '3.0.3';
 const Core = window.CeceCore;
 
 /* ------------------------------------------------------------
@@ -35,6 +36,9 @@ const Core = window.CeceCore;
 const $  = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+/** 两位补零：日期 / 时间 / 文件名共用的唯一实现 */
+const pad2 = n => String(n).padStart(2, '0');
 
 const uid = (prefix = 'p') =>
   prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -48,20 +52,17 @@ function escHTML(s) {
 function fmtTime(iso) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
-  const p = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
 function nowHM() {
   const d = new Date();
-  const p = n => String(n).padStart(2, '0');
-  return `${p(d.getHours())}:${p(d.getMinutes())}`;
+  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
 function defaultWorkName() {
   const d = new Date();
-  const p = n => String(n).padStart(2, '0');
-  return `测量工作 ${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  return `测量工作 ${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
 function safeFileName(name) {
@@ -935,8 +936,7 @@ function exportBundle(ids) {
     items
   };
   const stamp = new Date();
-  const p = n => String(n).padStart(2, '0');
-  const name = `测策备份-${stamp.getFullYear()}${p(stamp.getMonth() + 1)}${p(stamp.getDate())}-${p(stamp.getHours())}${p(stamp.getMinutes())}`;
+  const name = `测策备份-${stamp.getFullYear()}${pad2(stamp.getMonth() + 1)}${pad2(stamp.getDate())}-${pad2(stamp.getHours())}${pad2(stamp.getMinutes())}`;
   downloadJSON(payload, safeFileName(name) + '.cece.json');
 }
 
@@ -1470,6 +1470,11 @@ function beginDrag(ev, rowEl) {
  * ---------------------------------------------------------- */
 const SVGNS = 'http://www.w3.org/2000/svg';
 const MIN_SPAN = 1.0;
+/** 点按与拖动的分界位移（px）：小于此位移视为点按，不移动视图 */
+const TAP_SLOP = 8;
+/** 连线的默认命中容差（px）；已选中某条线时放宽到 LINK_HIT_TOL_PICKED */
+const LINK_HIT_TOL = 11;
+const LINK_HIT_TOL_PICKED = 22;
 
 function svgEl(tag, cls) {
   const el = document.createElementNS(SVGNS, tag);
@@ -1504,6 +1509,7 @@ const chart = {
   pointers: new Map(),
   gesture: null,
   lastTap: null,
+  multiTouch: false,
 
   reset() {
     this.svg = null;
@@ -1515,6 +1521,7 @@ const chart = {
     this.pointers.clear();
     this.gesture = null;
     this.lastTap = null;
+    this.multiTouch = false;
     this.pools = null;
   },
 
@@ -2071,6 +2078,8 @@ function bindChartGestures(svg) {
       sx: e.clientX, sy: e.clientY,
       moved: false, t: Date.now()
     });
+    // 本次手势出现过第二根手指（缩放），整个手势序列结束时不再判定为点按
+    if (chart.pointers.size > 1) chart.multiTouch = true;
     svg.classList.add('is-grabbing');
     startGesture();
   });
@@ -2079,8 +2088,9 @@ function bindChartGestures(svg) {
     const p = chart.pointers.get(e.pointerId);
     if (!p) return;
     p.x = e.clientX; p.y = e.clientY;
-    if (Math.abs(p.x - p.sx) + Math.abs(p.y - p.sy) > 8) p.moved = true;
-    updateGesture();
+    if (!p.moved && Math.abs(p.x - p.sx) + Math.abs(p.y - p.sy) > TAP_SLOP) p.moved = true;
+    // 单指必须确认是「拖动」才平移，避免轻微手抖把点按变成平移、并误置视角为手动
+    if (p.moved || chart.pointers.size > 1) updateGesture();
   });
 
   const end = e => {
@@ -2091,13 +2101,22 @@ function bindChartGestures(svg) {
     if (chart.pointers.size === 0) svg.classList.remove('is-grabbing');
     startGesture();
 
-    if (!p.moved && chart.pointers.size === 0 && Date.now() - p.t < 700) {
+    const wasMulti = chart.multiTouch;
+    if (chart.pointers.size === 0) chart.multiTouch = false;
+
+    // 点按判定只看「按下到抬起之间没有拖动」，与按住时长无关：
+    // 原先的 700ms 上限会让按得稍慢的点击被丢弃，表现为「轻点无效、按住才生效」。
+    // 双指缩放序列的收尾不参与点按判定，避免缩放后误选。
+    if (!p.moved && !wasMulti && chart.pointers.size === 0) {
       handleTap(e.clientX, e.clientY);
     }
   };
 
   svg.addEventListener('pointerup', end);
   svg.addEventListener('pointercancel', end);
+
+  // 长按 / 右键不弹出系统菜单，避免打断点选与拖动
+  svg.addEventListener('contextmenu', e => e.preventDefault());
 
   svg.addEventListener('wheel', e => {
     if (!ws.view.s) return;
@@ -2139,7 +2158,18 @@ function updateGesture() {
   if (g.mode === 'pan' && p.length === 1) {
     const dx = p[0].x - g.sx;
     const dy = p[0].y - g.sy;
-    if (Math.abs(dx) + Math.abs(dy) < 1) return;
+
+    if (!g.started) {
+      // 未越过点按阈值前不平移，保证「轻点」不会让视角抖动
+      if (Math.abs(dx) + Math.abs(dy) < TAP_SLOP) return;
+      // 首次确认是拖动：起点对齐到当前位置，后续平移量从零累计，避免视角一次性跳变
+      g.started = true;
+      g.sx = p[0].x; g.sy = p[0].y;
+      g.cx = ws.view.cx; g.cy = ws.view.cy;
+      return;
+    }
+
+    if (dx === 0 && dy === 0) return;
     ws.view.cx = g.cx - dx / ws.view.s;
     ws.view.cy = g.cy + dy / ws.view.s;
     ws.view.manual = true;
@@ -2201,9 +2231,9 @@ function distToSegment(px, py, x1, y1, x2, y2) {
   return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
 }
 
-function hitLink(x, y) {
+function hitLink(x, y, tol) {
   let best = null;
-  let bestD = 11;
+  let bestD = tol || LINK_HIT_TOL;
   for (let i = 0; i < chart.hitLinks.length; i++) {
     const l = chart.hitLinks[i];
     const d = distToSegment(x, y, l.x1, l.y1, l.x2, l.y2);
@@ -2219,11 +2249,20 @@ function handleTap(clientX, clientY) {
   const y = clientY - rect.top;
 
   const pt = hitPoint(x, y);
-  const lk = pt ? null : hitLink(x, y);
 
   /* ---------- 连线模式：选点连线 / 选线改色 ---------- */
   if (chart.mode === 'link') {
     if (pt) { selectPoint(pt.id); return; }
+
+    // 已选中某条线时，优先判断是否又点回了它（容差放宽），让「再点一次」可靠触发编辑
+    let lk = null;
+    if (chart.pickedLink) {
+      const own = chart.hitLinks.find(l => l.id === chart.pickedLink);
+      if (own && distToSegment(x, y, own.x1, own.y1, own.x2, own.y2) <= LINK_HIT_TOL_PICKED) {
+        lk = own;
+      }
+    }
+    if (!lk) lk = hitLink(x, y, LINK_HIT_TOL);
 
     if (lk) {
       if (chart.pickedLink === lk.id) {
@@ -2232,7 +2271,7 @@ function handleTap(clientX, clientY) {
       } else {
         chart.pickedLink = lk.id;
         drawChart();
-        toast('已选中连线，再次点击可改颜色或删除');
+        toast('已选中连线，再点它一次可改颜色或删除');
       }
       return;
     }
@@ -2258,7 +2297,7 @@ function handleTap(clientX, clientY) {
   }
 
   /* ---------- 普通模式：空白处双击 → 自适应 ---------- */
-  if (pt || lk) return;
+  if (pt || hitLink(x, y, LINK_HIT_TOL)) return;
 
   const lt = chart.lastTap;
   if (lt && !lt.id && Date.now() - lt.t < 340) {
@@ -2280,6 +2319,7 @@ function setChartMode(mode) {
   chart.sel = [];
   chart.pickedLink = '';
   chart.lastTap = null;
+  chart.multiTouch = false;
 
   const linkBtn = $('#linkModeBtn');
   const editBtn = $('#editPointBtn');
@@ -2290,7 +2330,7 @@ function setChartMode(mode) {
   drawChart();
   updateFab();
 
-  if (next === 'link') toast('依次点选多个点（至少 2 个）再点 ✓ 确认；点线可选中后再次点击改色或删除');
+  if (next === 'link') toast('依次点选多个点（至少 2 个）再点 ✓ 确认；点线选中后再点它一次可改色或删除');
   else if (next === 'edit') toast('点选一个点，再次点击可修改它的类型');
 }
 
@@ -2954,6 +2994,10 @@ function manageLevelStation(i) {
     });
   });
 }
+
+/* ------------------------------------------------------------
+ * 13. 角度测量（测回法）
+ * ---------------------------------------------------------- */
 
 /* ---------- 角度表：按站排序 / 删除单个测回 ---------- */
 

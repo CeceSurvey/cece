@@ -1326,6 +1326,10 @@ input,select{ font-family:inherit; }
   min-height:0;
   position:relative;
   background:radial-gradient(circle at 50% 0%, #fbfdfd 0%, #ffffff 68%);
+  /* 图表区域内禁用文本选择：长按/拖动时不会选中 SVG 内的点号、坐标注记等文字 */
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
 }
 
 #chart{
@@ -1334,6 +1338,9 @@ input,select{ font-family:inherit; }
   height:100%;
   touch-action:none;
   cursor:grab;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
 }
 #chart.is-picking{ cursor:crosshair; }
 #chart.is-grabbing{ cursor:grabbing; }
