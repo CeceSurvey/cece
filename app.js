@@ -1143,7 +1143,7 @@ function totalHTML() {
       <div class="panel-head">
         <h3 class="panel-title">平面图</h3>
         <div class="chart-tools">
-          <button class="tool-btn tool-btn-wide" id="editPointBtn" title="点选一个点，再次点击可改它的类型">编辑点</button>
+          <button class="tool-btn tool-btn-wide" id="editPointBtn" title="点选一个点位，长按可修改它的类型">编辑点</button>
           <button class="tool-btn tool-btn-wide" id="linkModeBtn" title="依次点选多个点后连线；点线可选中改色或删除">连线</button>
           <button class="tool-btn" id="zoomOut" aria-label="缩小">−</button>
           <button class="tool-btn" id="zoomIn" aria-label="放大">＋</button>
@@ -1475,6 +1475,8 @@ const TAP_SLOP = 8;
 /** 连线的默认命中容差（px）；已选中某条线时放宽到 LINK_HIT_TOL_PICKED */
 const LINK_HIT_TOL = 11;
 const LINK_HIT_TOL_PICKED = 22;
+/** 长按时长（ms）：按住达到此时长且手指未移动，即打开编辑面板 */
+const LONG_PRESS_MS = 500;
 
 function svgEl(tag, cls) {
   const el = document.createElementNS(SVGNS, tag);
@@ -2069,6 +2071,13 @@ function resetView() {
 }
 
 function bindChartGestures(svg) {
+  // 长按状态：pressTimer 只在单指按下时启动，longFired 表示本次按压已被长按消费
+  let pressTimer = 0;
+  let longFired = false;
+  const cancelPress = () => {
+    if (pressTimer) { clearTimeout(pressTimer); pressTimer = 0; }
+  };
+
   svg.addEventListener('pointerdown', e => {
     if (!ws.view.s) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -2082,13 +2091,41 @@ function bindChartGestures(svg) {
     if (chart.pointers.size > 1) chart.multiTouch = true;
     svg.classList.add('is-grabbing');
     startGesture();
+
+    // 长按是「打开编辑面板」的唯一入口；短按只负责选中，避免依赖浏览器自身的
+    // 长按 / 双击行为（WebView 里这些行为并不可靠）
+    cancelPress();                 // 双指按下时先撤销第一根手指的待长按
+    if (chart.pointers.size === 1) {
+      longFired = false;
+      if (chart.mode === 'link' || chart.mode === 'edit') {
+        const px = e.clientX;
+        const py = e.clientY;
+        pressTimer = setTimeout(() => {
+          pressTimer = 0;
+          const p = chart.pointers.get(e.pointerId);
+          if (!p || p.moved || chart.pointers.size > 1) return;
+          longFired = true;
+          // 面板会盖在图上，抬手事件可能被遮罩吞掉：这里主动结束本次手势，
+          // 避免指针记录残留（否则下一次按下会被当成双指，点按全部失效）
+          chart.pointers.delete(e.pointerId);
+          chart.gesture = null;
+          chart.multiTouch = false;
+          try { svg.releasePointerCapture(e.pointerId); } catch {}
+          svg.classList.remove('is-grabbing');
+          handleLongPress(px, py);
+        }, LONG_PRESS_MS);
+      }
+    }
   });
 
   svg.addEventListener('pointermove', e => {
     const p = chart.pointers.get(e.pointerId);
     if (!p) return;
     p.x = e.clientX; p.y = e.clientY;
-    if (!p.moved && Math.abs(p.x - p.sx) + Math.abs(p.y - p.sy) > TAP_SLOP) p.moved = true;
+    if (!p.moved && Math.abs(p.x - p.sx) + Math.abs(p.y - p.sy) > TAP_SLOP) {
+      p.moved = true;
+      cancelPress();               // 已变成拖动，撤销待触发的长按
+    }
     // 单指必须确认是「拖动」才平移，避免轻微手抖把点按变成平移、并误置视角为手动
     if (p.moved || chart.pointers.size > 1) updateGesture();
   });
@@ -2096,18 +2133,21 @@ function bindChartGestures(svg) {
   const end = e => {
     const p = chart.pointers.get(e.pointerId);
     if (!p) return;
+    cancelPress();
     chart.pointers.delete(e.pointerId);
     try { svg.releasePointerCapture(e.pointerId); } catch {}
     if (chart.pointers.size === 0) svg.classList.remove('is-grabbing');
     startGesture();
 
     const wasMulti = chart.multiTouch;
-    if (chart.pointers.size === 0) chart.multiTouch = false;
+    const wasLong = longFired;
+    if (chart.pointers.size === 0) {
+      chart.multiTouch = false;
+      longFired = false;
+    }
 
-    // 点按判定只看「按下到抬起之间没有拖动」，与按住时长无关：
-    // 原先的 700ms 上限会让按得稍慢的点击被丢弃，表现为「轻点无效、按住才生效」。
-    // 双指缩放序列的收尾不参与点按判定，避免缩放后误选。
-    if (!p.moved && !wasMulti && chart.pointers.size === 0) {
+    // 短按（未拖动、未长按、非缩放收尾）→ 选中 / 取消选中
+    if (!p.moved && !wasMulti && !wasLong && chart.pointers.size === 0) {
       handleTap(e.clientX, e.clientY);
     }
   };
@@ -2242,6 +2282,38 @@ function hitLink(x, y, tol) {
   return best;
 }
 
+/**
+ * 长按处理：连线模式打开「颜色与删除」面板，编辑点模式打开「点位类型」面板。
+ * 位置取按下瞬间的坐标——长按过程中手指常有轻微位移，实时坐标反而容易打偏。
+ */
+function handleLongPress(clientX, clientY) {
+  if (!ws.project || ws.kind !== 'total') return;
+  if (chart.mode !== 'link' && chart.mode !== 'edit') return;
+
+  if (ws.readonly) {
+    toast(chart.mode === 'link' ? '只读模式下无法编辑连线' : '只读模式下无法修改点位类型');
+    return;
+  }
+
+  const rect = chart.svg.getBoundingClientRect();
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+
+  if (chart.mode === 'link') {
+    // 长按点位时不抢「选点连线」的手势，交给短按去累加点
+    if (hitPoint(x, y)) return;
+    const lk = hitLink(x, y, LINK_HIT_TOL_PICKED);
+    if (!lk) return;
+    chart.pickedLink = '';
+    openLinkColor(lk.id);
+    return;
+  }
+
+  const pt = hitPoint(x, y);
+  if (!pt) return;
+  openTypePicker(pt.id);
+}
+
 function handleTap(clientX, clientY) {
   if (!ws.project || ws.kind !== 'total') return;
   const rect = chart.svg.getBoundingClientRect();
@@ -2250,28 +2322,21 @@ function handleTap(clientX, clientY) {
 
   const pt = hitPoint(x, y);
 
-  /* ---------- 连线模式：选点连线 / 选线改色 ---------- */
+  /* ---------- 连线模式：短按选点 / 选中连线（长按才打开编辑面板） ---------- */
   if (chart.mode === 'link') {
     if (pt) { selectPoint(pt.id); return; }
 
-    // 已选中某条线时，优先判断是否又点回了它（容差放宽），让「再点一次」可靠触发编辑
-    let lk = null;
-    if (chart.pickedLink) {
-      const own = chart.hitLinks.find(l => l.id === chart.pickedLink);
-      if (own && distToSegment(x, y, own.x1, own.y1, own.x2, own.y2) <= LINK_HIT_TOL_PICKED) {
-        lk = own;
-      }
-    }
-    if (!lk) lk = hitLink(x, y, LINK_HIT_TOL);
+    const lk = hitLink(x, y, chart.pickedLink ? LINK_HIT_TOL_PICKED : LINK_HIT_TOL);
 
     if (lk) {
       if (chart.pickedLink === lk.id) {
         chart.pickedLink = '';
-        openLinkColor(lk.id);
+        drawChart();
+        toast('已取消选中连线');
       } else {
         chart.pickedLink = lk.id;
         drawChart();
-        toast('已选中连线，再点它一次可改颜色或删除');
+        toast('已选中连线，长按可改颜色或删除');
       }
       return;
     }
@@ -2281,17 +2346,17 @@ function handleTap(clientX, clientY) {
     return;
   }
 
-  /* ---------- 编辑点模式：选点 → 再次点击改类型 ---------- */
+  /* ---------- 编辑点模式：短按选点 / 取消选中（长按才打开类型面板） ---------- */
   if (chart.mode === 'edit') {
     if (!pt) return;
     if (chart.sel[0] === pt.id) {
-      if (ws.readonly) { toast('只读模式下无法修改点位类型'); return; }
       chart.sel = [];
-      openTypePicker(pt.id);
+      drawChart();
+      toast('已取消选中');
     } else {
       chart.sel = [pt.id];
       drawChart();
-      toast('已选中点，再次点击可改类型');
+      toast('已选中点，长按可修改类型');
     }
     return;
   }
@@ -2330,8 +2395,8 @@ function setChartMode(mode) {
   drawChart();
   updateFab();
 
-  if (next === 'link') toast('依次点选多个点（至少 2 个）再点 ✓ 确认；点线选中后再点它一次可改色或删除');
-  else if (next === 'edit') toast('点选一个点，再次点击可修改它的类型');
+  if (next === 'link') toast('依次点选多个点（至少 2 个）再点 ✓ 确认；长按连线可改颜色或删除');
+  else if (next === 'edit') toast('点选一个点位，长按可修改它的类型');
 }
 
 /** 连线模式下按点击顺序累加点；再点已选中的点 = 取消该点 */
@@ -5235,8 +5300,8 @@ function showGuide() {
       <p>在表格里填点号、N/E 坐标，右侧（竖屏为下方）会实时成点并自动缩放到合适视野。</p>
       <p>· 点号留空时，程序会按"上一个数字点号 +1"给一个浅灰预测值，直接跳到别的格子就会把它落成实际点号。<br/>
          · 点「连线」后可依次点选多个点，程序按点选顺序把相邻两点连成折线，点 ✓ 确认（再点一次已选点可取消它）。<br/>
-         · 连线模式下点中一条线会高亮，再点一次可改颜色或删除。<br/>
-         · 点「编辑点」后点中一个点，再点一次可修改它的点位类型，点号颜色随之改变。<br/>
+         · 连线模式下点中一条线会高亮，<b>长按这条线</b>即可改颜色或删除。<br/>
+         · 点「编辑点」后点中一个点位，<b>长按该点位</b>即可修改它的类型，点号颜色随之改变。<br/>
          · 备注里写"控制""原""搬站"等关键词，程序会自动归类。<br/>
          · 新建点位默认用哪个类型，到「关于程序 → 程序设置」点「修改」，勾上<b>「选择该点为默认点」</b>即可；默认点只保留一个，设了新的，旧的自动取消。</p>
       <p><b>② 水准测量</b></p>
